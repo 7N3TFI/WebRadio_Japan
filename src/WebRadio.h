@@ -184,6 +184,8 @@ class WebRadio {
       if(!station)
         station = restoreStation();
 
+      if(!station && stations.size() > defaultStationIdx)
+        station = stations[defaultStationIdx];
       if(!station && stations.size() > 0)
         station = stations[0];
 
@@ -248,6 +250,7 @@ class WebRadio {
     std::function<void(const char *message)> onError = nullptr;
     std::function<void(const char *message)> onInfo = nullptr;
     std::function<void(const char *program_title)> onProgram = nullptr;
+    std::function<void(const char *message)> onUnrecover = nullptr;
 
   protected:
     AudioOutput * out = nullptr;
@@ -255,6 +258,7 @@ class WebRadio {
     Station * current_station = nullptr;
     Station * select_station = nullptr;
     unsigned long long saveSettings = 0;
+    size_t defaultStationIdx = 0;
     
     TaskHandle_t download_handle;
     TaskHandle_t decode_handle;

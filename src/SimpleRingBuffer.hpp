@@ -8,7 +8,7 @@
 template <typename T>
 class SimpleRingBuffer {
   public:
-    SimpleRingBuffer(uint16_t _buffSize = 6000) : buffSize(_buffSize), writeMode(0), deallocateBuffer(true) {
+    SimpleRingBuffer(uint16_t _buffSize) : buffSize(_buffSize), writeMode(0), deallocateBuffer(true) {
       buffer = new T[buffSize];
       if(!buffer)
         Serial.printf("failed buffer = new T[%d]\n", buffSize);

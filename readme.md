@@ -25,14 +25,20 @@ SDカードを用いて WiFi の設定が行えます。
 - [arduino-libraries/Arduino_JSON](https://github.com/arduino-libraries/Arduino_JSON)
 
 ### ビルド時の注意
-- PSRAM:Enabled にしてビルドすると、低速な PSRAM をバッファとして利用されうるコードが生成されてしまいますので、PSRAM:Disabled でビルドされることを強く推奨します。
-- Jcbasimal のほうは arduino-esp32 v2.0.4 だとメモリー不足で動作しません。v2.0.3 をお使いください。
+- Jcbasimal のほうは arduino-esp32 v2.0.4 では動きません。v2.0.3／v2.0.3 をお使いください。
 - Radiko のほうは arduino-esp32 v2.0.4 で動作します。
+- arduino-esp32 v2.0.3 では PSRAM 有効にするとビルドが失敗します。v2.0.2 をお使いください。
+- M5Stack Fire で PSRAM 有効にしたとき、arduino-esp32 v2.0.4 で SPI 関係のエラーが出てしまう場合があります。その場合は v2.0.2 をお使いください。
+|　|PSRAM無効|PSRAM有効・Fire|PSRAM有効・Fire以外|
+|Jcbasimul|v2.0.2/v2.0.3|v2.0.2|v2.0.2|
+|Radiko|v2.0.2/v2.0.3/v2.0.4|v2.0.2|v2.0.2/v2.0.4|
 
-### AAC-SBR を無効にするためライブラリを Fork しました
+### ESP8266Audio ライブラリを Fork しました
  ESP8266Audio の AACDecorder を ESP32 で利用すると、必ず SBR が有効になってしまいますが、SBR を有効にすると Radiko の受信には最大で4チャネル必要で、メモリー不足により安定して動作しませんでした。  
  元来は「HELIX_FEATURE_AUDIO_CODEC_AAC_SBR」という定数定義に基づいて SBR が有効になるべきだと思われるものの、ESP8266 以外で常に SBR が有効になる記述も別にあり、実質的には「HELIX_FEATURE_AUDIO_CODEC_AAC_SBR」が機能しない状態になってしまっています。  
- 私としてはバグだと解釈しているのですが、AAC に関する知識も欠如しており Pull-Request を提出すべきか悩んでおり、とりあえず Fork したうえで該当箇所を修正しましたので、ビルドされる方は私が Fork したほうをご利用ください。
+ 私としてはバグだと解釈しているのですが、AAC に関する知識も欠如しており Pull-Request を提出すべきか悩んでおり、とりあえず Fork したうえで該当箇所を修正しましたので、ビルドされる方は私が Fork したほうをご利用ください。  
+  
+ デコード処理に用いられる作業領域に PSRAM からの領域が割り当てられると音質が大きく劣化するため、ESP32 において常に内蔵の SRAM から確保するようにしました。
 
 ### Radiko premium（プレミアム会員）
 WiFi設定と同じ要領で SDカードを用いて Radiko premium の認証情報を登録すると、全国の放送局が選局可能になります。  

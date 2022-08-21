@@ -124,14 +124,12 @@ static String urlencode(String str)
 class Radiko : public WebRadio {
   public:
 #ifndef SEPARATE_DOWNLOAD_TASK
-    Radiko(AudioOutput * _out, int cpuDecode, const uint16_t buffSize = 6 * 1024) : buffer(buffSize), WebRadio(_out, cpuDecode, 2048) {
-      decode_buffer = malloc(decode_buffer_size);
-    }
+    Radiko(AudioOutput * _out, int cpuDecode, const uint16_t buffSize = 0) : bufferSize(buffSize), WebRadio(_out, cpuDecode, 2048) {
 #else
-    Radiko(AudioOutput * _out, int cpuDecode, const uint16_t buffSize = 6 * 1024) : buffer(buffSize), WebRadio(_out, cpuDecode, 2048, 1 - cpuDecode, 2560) {
-      decode_buffer = malloc(decode_buffer_size);
-    }
+    Radiko(AudioOutput * _out, int cpuDecode, const uint16_t buffSize = 0) : bufferSize(buffSize), WebRadio(_out, cpuDecode, 2048, 1 - cpuDecode, 2560) {
 #endif
+      decode_buffer = heap_caps_malloc(decode_buffer_size, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    }
     
     ~Radiko() {
       setAuthorization();
@@ -374,7 +372,7 @@ class Radiko : public WebRadio {
     virtual bool begin() override {
       if(strlen(secret_key) != 40 && strlen(secret_key) != 32000)
         return false;     
-        
+      
       uint8_t keyType = strlen(secret_key) == 40 ? 0 : 1;
       WiFiClientSecure clients;
       HTTPClient http;
@@ -383,6 +381,11 @@ class Radiko : public WebRadio {
       
       deInit();
       areaFree = false;
+      
+      if(!bufferSize)
+        bufferSize = std::max(6 * 1024, (int)std::min( (uint32_t)UINT16_MAX, heap_caps_get_free_size(MALLOC_CAP_SPIRAM)));
+      
+      buffer = new AudioFileSourceHLS(bufferSize);
       
       clients.setInsecure();
       if (user && pass && http.begin(clients, "https://radiko.jp/ap/member/login/login")) {
@@ -517,11 +520,11 @@ class Radiko : public WebRadio {
       if(decoder) {
         stopDecode = 2;
         while(stopDecode == 2) {delay(100);}
-        buffer.init();      
+        buffer->init();      
       }
       
       if(stream) {
-        buffer.setSource(nullptr);
+        buffer->setSource(nullptr);
         delete stream;
         stream = nullptr;
       }
@@ -533,7 +536,7 @@ class Radiko : public WebRadio {
 #ifdef SEPARATE_DOWNLOAD_TASK
         vTaskSuspend(download_handle);
 #endif
-        sendSyslog("authentication process");
+        sendLog("authentication process");
         auto idx = getIndex(current_station);
         
         if(!begin()) {
@@ -552,20 +555,21 @@ class Radiko : public WebRadio {
     }
     
     virtual bool RegisterMetadataCB(AudioStatus::metadataCBFn fn, void *data) override {
-      return WebRadio::RegisterMetadataCB(fn, data) && buffer.RegisterMetadataCB(fn, data);
+      return WebRadio::RegisterMetadataCB(fn, data) && buffer->RegisterMetadataCB(fn, data);
     }
     virtual bool RegisterStatusCB(AudioStatus::statusCBFn fn, void *data) override {
-      return WebRadio::RegisterStatusCB(fn, data) && buffer.RegisterStatusCB(fn, data);
+      return WebRadio::RegisterStatusCB(fn, data) && buffer->RegisterStatusCB(fn, data);
     }
     
     String getInfoBuffer() {
-      return buffer.getInfoBuffer();
+      return buffer->getInfoBuffer();
     }
     
   private:
-    AudioFileSourceHLS buffer;
     AudioGeneratorAAC * decoder = nullptr;
     AudioFileSource * stream = nullptr;
+    AudioFileSourceHLS * buffer = nullptr;
+    uint16_t bufferSize;
     void * decode_buffer = nullptr;
     size_t decode_buffer_size = 26352;
     
@@ -594,6 +598,10 @@ class Radiko : public WebRadio {
     
   private:
     void deInit() {
+      if(buffer) {
+        delete buffer;
+        buffer = nullptr;
+      }
       WebRadio::deInit();
     }
     
@@ -651,7 +659,7 @@ class Radiko : public WebRadio {
           
           stream = chunk->getStream();
           if(stream)
-            buffer.setSource(stream);
+            buffer->setSource(stream);
         }
       }
       
@@ -659,11 +667,11 @@ class Radiko : public WebRadio {
         nextChunk = true;
       
       if(stream)
-        if(!buffer.fill())
+        if(!buffer->fill())
           nextChunk = true;
       
       if(nextChunk) {
-        buffer.setSource(nullptr);
+        buffer->setSource(nullptr);
         if(stream) {
           delete stream;
           stream = nullptr;
@@ -694,7 +702,7 @@ class Radiko : public WebRadio {
       else if(!decoder) {
         ;
       } else if (!decoder->isRunning()) {
-        if(buffer.isFilled() && !decoder->begin(&buffer, out)) {
+        if(buffer->isFilled() && !decoder->begin(buffer, out)) {
           delay(1000);
           last_loop = now_millis;
         } else if (now_millis - last_loop > 10000) {
@@ -703,7 +711,7 @@ class Radiko : public WebRadio {
           nextChunk = true;
         }
       } else if (decoder->isRunning()) {
-        if(buffer.getSize() >= 2*1024) {
+        if(buffer->getSize() >= 2*1024) {
           if(decoder->loop())
             last_loop = now_millis;
           else {

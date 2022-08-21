@@ -149,13 +149,15 @@ static byte initial_station = 95;   // ウメダFM Be Happy!789
 
 class Jcbasimul : public WebRadio {
   public:
-    Jcbasimul(AudioOutput * _out, int cpuDecode, const uint16_t buffSize = 5 * 1024) : bufferSize(buffSize), WebRadio(_out, cpuDecode, decode_stack_size) {
+    Jcbasimul(AudioOutput * _out, int cpuDecode, const uint16_t buffSize = 0) : bufferSize(buffSize), WebRadio(_out, cpuDecode, decode_stack_size) {
       for(int i = 0; i < sizeof(station_list) / sizeof(station_list[0]); i++)
         stations.push_back(new station_t(this, station_list[i][0], station_list[i][1]));
+      defaultStationIdx = initial_station;
     }
     Jcbasimul(AudioOutput * _out, int cpuDecode, uint8_t * _buffer, const uint16_t buffSize) : buffer(_buffer), bufferSize(buffSize), WebRadio(_out, cpuDecode, decode_stack_size) {
       for(int i = 0; i < sizeof(station_list) / sizeof(station_list[0]); i++)
         stations.push_back(new station_t(this, station_list[i][0], station_list[i][1]));
+      defaultStationIdx = initial_station;
     }
 
     ~Jcbasimul() {
@@ -220,6 +222,9 @@ class Jcbasimul : public WebRadio {
     };
 
     virtual bool begin() override {
+      if(!bufferSize)
+        bufferSize = std::max(5 * 1024, (int)std::min( (uint32_t)UINT16_MAX, heap_caps_get_free_size(MALLOC_CAP_SPIRAM)));
+      
       return true; 
     }
 
@@ -299,12 +304,13 @@ class Jcbasimul : public WebRadio {
       else if(!decoder) {
         ;
       } else if(!decoder->isRunning()) {
-        if(source->getSize() > 0) {
+        if(source->getSize() >= (int)bufferSize - 4 * 1024) {
           if(decoder->begin(source, out))
             last_loop = now_millis;
           else {
             sendLog("failed: decoder->begin(source, out)", true);
             select_station = current_station;
+            delay(1000);
           }
         }
       } else if(source->getSize() > 0) {
