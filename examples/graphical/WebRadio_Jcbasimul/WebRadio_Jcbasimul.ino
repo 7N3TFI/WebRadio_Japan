@@ -111,7 +111,7 @@ public:
 
 static constexpr size_t WAVE_SIZE = 320;
 static AudioOutputM5Speaker out(&M5.Speaker, m5spk_virtual_channel);
-static Jcbasimul radio(&out, 1-m5spk_task_pinned_core);
+static Jcbasimul radio(&out, m5spk_task_pinned_core);
 
 static fft_t fft;
 static bool fft_enabled = false;

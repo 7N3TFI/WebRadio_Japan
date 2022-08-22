@@ -37,7 +37,11 @@ class SimpleRingBuffer {
       else
         return            writePtr - readPtr;
     }
-
+    
+    uint16_t size() {
+      return buffSize;
+    }
+    
     uint16_t free() {
       return buffSize - available() - 1;
     }

@@ -149,12 +149,20 @@ static byte initial_station = 95;   // ウメダFM Be Happy!789
 
 class Jcbasimul : public WebRadio {
   public:
-    Jcbasimul(AudioOutput * _out, int cpuDecode, const uint16_t buffSize = 0) : bufferSize(buffSize), WebRadio(_out, cpuDecode, decode_stack_size) {
+#ifndef SEPARATE_DOWNLOAD_TASK
+    Jcbasimul(AudioOutput * _out, int cpuDecode, const UBaseType_t priorityDecode = 3, const uint16_t buffSize = 0) : bufferSize(buffSize), WebRadio(_out, cpuDecode, decode_stack_size, priorityDecode) {
+#else
+    Jcbasimul(AudioOutput * _out, int cpuDecode, const UBaseType_t priorityDecode = 3, const uint16_t buffSize = 0) : bufferSize(buffSize), WebRadio(_out, cpuDecode, decode_stack_size, priorityDecode, 1 - cpuDecode, 4096) {
+#endif
       for(int i = 0; i < sizeof(station_list) / sizeof(station_list[0]); i++)
         stations.push_back(new station_t(this, station_list[i][0], station_list[i][1]));
       defaultStationIdx = initial_station;
     }
-    Jcbasimul(AudioOutput * _out, int cpuDecode, uint8_t * _buffer, const uint16_t buffSize) : buffer(_buffer), bufferSize(buffSize), WebRadio(_out, cpuDecode, decode_stack_size) {
+#ifndef SEPARATE_DOWNLOAD_TASK
+    Jcbasimul(AudioOutput * _out, int cpuDecode, uint8_t * _buffer, const uint16_t buffSize) : buffer(_buffer), bufferSize(buffSize), WebRadio(_out, cpuDecode, decode_stack_size, 3) {
+#else
+    Jcbasimul(AudioOutput * _out, int cpuDecode, uint8_t * _buffer, const uint16_t buffSize) : buffer(_buffer), bufferSize(buffSize), WebRadio(_out, cpuDecode, decode_stack_size, 3, 1 - cpuDecode, 4096) {
+#endif
       for(int i = 0; i < sizeof(station_list) / sizeof(station_list[0]); i++)
         stations.push_back(new station_t(this, station_list[i][0], station_list[i][1]));
       defaultStationIdx = initial_station;
@@ -242,7 +250,9 @@ class Jcbasimul : public WebRadio {
     }
     
     virtual void handle() override {
+#ifndef SEPARATE_DOWNLOAD_TASK
       downloadTaskCore();
+#endif
     }
     
     String getInfoBuffer() {
@@ -304,7 +314,7 @@ class Jcbasimul : public WebRadio {
       else if(!decoder) {
         ;
       } else if(!decoder->isRunning()) {
-        if(source->getSize() >= (int)bufferSize - 4 * 1024) {
+        if(source->getSize() >= (bufferSize >> 1) ) {
           if(decoder->begin(source, out))
             last_loop = now_millis;
           else {

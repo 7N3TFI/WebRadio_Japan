@@ -51,7 +51,8 @@ class AudioFileSourceWebSockets : public AudioFileSource {
     }
     
     bool fill() {
-      wss.loop();
+      if(buffer.size() < 10 * 1024 || buffer.free() > 5 * 1024)
+        wss.loop();
       return true;
     }
     

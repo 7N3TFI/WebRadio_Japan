@@ -124,9 +124,9 @@ static String urlencode(String str)
 class Radiko : public WebRadio {
   public:
 #ifndef SEPARATE_DOWNLOAD_TASK
-    Radiko(AudioOutput * _out, int cpuDecode, const uint16_t buffSize = 0) : bufferSize(buffSize), WebRadio(_out, cpuDecode, 2048) {
+    Radiko(AudioOutput * _out, int cpuDecode, const uint16_t buffSize = 0) : bufferSize(buffSize), WebRadio(_out, cpuDecode, 2048, 1) {
 #else
-    Radiko(AudioOutput * _out, int cpuDecode, const uint16_t buffSize = 0) : bufferSize(buffSize), WebRadio(_out, cpuDecode, 2048, 1 - cpuDecode, 2560) {
+    Radiko(AudioOutput * _out, int cpuDecode, const uint16_t buffSize = 0) : bufferSize(buffSize), WebRadio(_out, cpuDecode, 2048, 1, 1 - cpuDecode, 2560) {
 #endif
       decode_buffer = heap_caps_malloc(decode_buffer_size, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     }

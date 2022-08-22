@@ -69,7 +69,7 @@ static const area_t areas[] = {
   { "鹿児島", 31.560146F, 130.557978F},
   { "沖縄", 26.2124F, 127.680932},
 };
-  
+
 class WebRadio {
   public:
     class Station {
@@ -83,12 +83,12 @@ class WebRadio {
   protected:
     WebRadio(AudioOutput * _out) : out(_out) {}
     
-    WebRadio(AudioOutput * _out, byte cpuDecode, uint16_t stackDecode) : out(_out) {
-      xTaskCreatePinnedToCore(&voidDecodeTask  , "decode"  , stackDecode  , this, 1, &decode_handle  , cpuDecode  ); 
+    WebRadio(AudioOutput * _out, const byte cpuDecode, const uint16_t stackDecode, const UBaseType_t priorityDecode) : out(_out) {
+      xTaskCreatePinnedToCore(&voidDecodeTask  , "decode"  , stackDecode  , this, priorityDecode, &decode_handle  , cpuDecode  ); 
     }
     
-    WebRadio(AudioOutput * _out, byte cpuDecode, uint16_t stackDecode, byte cpuDownload, uint16_t stackDownload) : out(_out) {
-      xTaskCreatePinnedToCore(&voidDecodeTask  , "decode"  , stackDecode  , this, 1, &decode_handle  , cpuDecode  ); 
+    WebRadio(AudioOutput * _out, const byte cpuDecode, const uint16_t stackDecode, const UBaseType_t priorityDecode, const byte cpuDownload, const uint16_t stackDownload) : out(_out) {
+      xTaskCreatePinnedToCore(&voidDecodeTask  , "decode"  , stackDecode  , this, priorityDecode, &decode_handle  , cpuDecode  ); 
       xTaskCreatePinnedToCore(&voidDownloadTask, "download", stackDownload, this, 1, &download_handle, cpuDownload);
     }
     
