@@ -336,9 +336,6 @@ class Jcbasimul : public WebRadio {
         decoder->stop();
         last_loop = now_millis;
         select_station = current_station;
-      } else if (now_millis - last_loop > 1000) {
-        sendLog("Streaming reception too slow", true);
-        last_loop = now_millis;
       }
     }
     
