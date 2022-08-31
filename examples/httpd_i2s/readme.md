@@ -10,8 +10,8 @@
 |PCM5102Aモジュール|ESP32|
 |:----:|:----:|
 |SCK|GND|
-|BCK|G22|
-|DIN|G25|
+|BCK|G25|
+|DIN|G22|
 |SLCK|G26|
 |GND|GND|
 |VCC|3V3|
