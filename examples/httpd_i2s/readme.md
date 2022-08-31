@@ -18,6 +18,7 @@
 
 - 他のモジュールでも可能と思われます。
 - 上記以外のピンを使用する場合は、スケッチ内 out.SetPinout() でピン番号を指定して下さい。
+- ESP-WROOM32(PSRAMなし)、ESP32-WROVER-B(PSRAMあり) でテストしています。
 
 ![image1](/docs/i2s.JPG)
 
