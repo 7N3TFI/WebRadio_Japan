@@ -12,7 +12,7 @@
 |SCK|GND|
 |BCK|G26|
 |DIN|G22|
-|SLCK|G25|
+|LCK|G25|
 |GND|GND|
 |VCC|3V3|
 
