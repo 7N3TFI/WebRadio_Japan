@@ -167,14 +167,14 @@ class WebRadio {
       }
     }
     
-    void sendLog(const char *text, bool error = true) {
+    void sendLog(const char *text, bool error = false) {
       sendSyslog(text);
       if(error && onError)
         onError(text);
       if(!error && onInfo)
         onInfo(text);
     }
-    void sendLog(const String text, bool error = true) {
+    void sendLog(const String text, bool error = false) {
       sendLog(text.c_str(), error);
     }
     
@@ -204,6 +204,9 @@ class WebRadio {
     virtual void handle() {;}
     
     virtual size_t getNumOfStations() { return stations.size(); }
+    virtual Station * getStation() {
+      return current_station;
+    }
     virtual Station * getStation(size_t index) {
       if(index >= stations.size())
         return nullptr;

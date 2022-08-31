@@ -5,6 +5,8 @@
 #######################################
 # Datatypes (KEYWORD1)
 #######################################
+WebRadio_Jcbasimul	KEYWORD1
+WebRadio_Radiko	KEYWORD1
 Jcbasimul	KEYWORD1
 Radiko	KEYWORD1
 #######################################
