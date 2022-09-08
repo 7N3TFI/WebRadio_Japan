@@ -237,6 +237,8 @@ class Jcbasimul : public WebRadio {
     }
 
     void stop() {
+      current_station = nullptr;
+      
       if(decoder) {
         stopDecode = 2;
         while(stopDecode == 2) {delay(100);}

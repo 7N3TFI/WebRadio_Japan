@@ -5,7 +5,7 @@
 static constexpr uint8_t m5spk_task_pinned_core = APP_CPU_NUM;
 
 static AudioOutputM5Speaker out(&M5.Speaker, 0);
-static Jcbasimul radio(&out, m5spk_task_pinned_core);
+static Jcbasimul radio(&out, 1-m5spk_task_pinned_core);
 
 void setup() {
   {    

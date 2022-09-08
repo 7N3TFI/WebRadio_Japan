@@ -111,7 +111,7 @@ public:
 
 static constexpr size_t WAVE_SIZE = 320;
 static AudioOutputM5Speaker out(&M5.Speaker, m5spk_virtual_channel);
-static Jcbasimul radio(&out, m5spk_task_pinned_core);
+static Jcbasimul radio(&out, 1-m5spk_task_pinned_core);
 
 static fft_t fft;
 static bool fft_enabled = false;
@@ -405,7 +405,7 @@ void gfxLoop(LGFX_Device* gfx)
   if (!gfx->displayBusy())
   { // draw volume bar
     static int px;
-    uint8_t v = M5.Speaker.getChannelVolume(m5spk_virtual_channel);
+    uint8_t v = M5.Speaker.getVolume();
     int x = v * (gfx->width()) >> 8;
     if (px != x)
     {
@@ -487,7 +487,7 @@ void setup(void)
     if (ESP_OK == nvs_open("WebRadio", NVS_READONLY, &nvs_handle)) {
       size_t volume;
       nvs_get_u32(nvs_handle, "volume", &volume);
-      M5.Speaker.setChannelVolume(m5spk_virtual_channel, volume);
+      M5.Speaker.setVolume(volume);
       nvs_close(nvs_handle);
     }
   }
@@ -591,7 +591,7 @@ void loop(void)
   }
   if (M5.BtnA.isHolding() || M5.BtnB.isPressed() || M5.BtnC.isPressed())
   {
-    size_t v = M5.Speaker.getChannelVolume(m5spk_virtual_channel);
+    size_t v = M5.Speaker.getVolume();
     int add = (M5.BtnB.isPressed()) ? -1 : 1;
     if (M5.BtnA.isHolding())
     {
@@ -600,7 +600,7 @@ void loop(void)
     v += add;
     if (v <= 255)
     {
-      M5.Speaker.setChannelVolume(m5spk_virtual_channel, v);
+      M5.Speaker.setVolume(v);
       saveSettings = millis() + 5000;
     }
   }
@@ -609,7 +609,7 @@ void loop(void)
   {
     uint32_t nvs_handle;
     if (ESP_OK == nvs_open("WebRadio", NVS_READWRITE, &nvs_handle)) {
-      size_t volume = M5.Speaker.getChannelVolume(m5spk_virtual_channel);
+      size_t volume = M5.Speaker.getVolume();
       nvs_set_u32(nvs_handle, "volume", volume);
       nvs_close(nvs_handle);
     }

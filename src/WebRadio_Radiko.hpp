@@ -10,10 +10,6 @@
 #include "AudioFileSourceHLS.hpp"
 #include <base64.h>
 
-#ifdef AAC_ENABLE_SBR
-#error "Please switch AAC_ENABLE_SBR from enabled to disabled"
-#endif
-
 #include "WebRadio.h"
 
 static const char * secret_key = "bcd151073c03b352e1ef2fd66c32209da9ca0afa";
@@ -124,18 +120,19 @@ static String urlencode(String str)
 class Radiko : public WebRadio {
   public:
 #ifndef SEPARATE_DOWNLOAD_TASK
-    Radiko(AudioOutput * _out, int cpuDecode, const uint16_t buffSize = 0) : bufferSize(buffSize), WebRadio(_out, cpuDecode, 2048, 1) {
+    Radiko(AudioOutput * _out, int cpuDecode, const uint16_t buffSize = 0) : bufferSize(buffSize), WebRadio(_out, cpuDecode, 2048, 3) {
 #else
-    Radiko(AudioOutput * _out, int cpuDecode, const uint16_t buffSize = 0) : bufferSize(buffSize), WebRadio(_out, cpuDecode, 2048, 1, 1 - cpuDecode, 2560) {
+    Radiko(AudioOutput * _out, int cpuDecode, const uint16_t buffSize = 0) : bufferSize(buffSize), WebRadio(_out, cpuDecode, 2048, 3, 1 - cpuDecode, 2560) {
 #endif
-      decode_buffer = heap_caps_malloc(decode_buffer_size, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+//    decode_buffer = heap_caps_malloc(decode_buffer_size, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     }
     
     ~Radiko() {
       setAuthorization();
       if(decoder)
         delete decoder;
-      free(decode_buffer);
+      if(decode_buffer)
+        free(decode_buffer);
     }
     
     class station_t : public WebRadio::Station {
@@ -373,6 +370,11 @@ class Radiko : public WebRadio {
       if(strlen(secret_key) != 40 && strlen(secret_key) != 32000)
         return false;     
       
+      if(!decode_buffer && decode_buffer_size) {
+        decode_buffer = heap_caps_malloc(decode_buffer_size, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+        if(!decode_buffer)
+          return false;
+      }
       uint8_t keyType = strlen(secret_key) == 40 ? 0 : 1;
       WiFiClientSecure clients;
       HTTPClient http;
@@ -517,6 +519,9 @@ class Radiko : public WebRadio {
     }
     
     virtual void stop() override {
+      current_playlist = nullptr;
+      chunks = nullptr;
+      
       if(decoder) {
         stopDecode = 2;
         while(stopDecode == 2) {delay(100);}
@@ -571,7 +576,11 @@ class Radiko : public WebRadio {
     AudioFileSourceHLS * buffer = nullptr;
     uint16_t bufferSize;
     void * decode_buffer = nullptr;
+#ifdef AAC_ENABLE_SBR
+    size_t decode_buffer_size = 89428;
+#else
     size_t decode_buffer_size = 26352;
+#endif
     
     char * user = nullptr;;
     char * pass = nullptr;;
