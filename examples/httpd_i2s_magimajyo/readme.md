@@ -2,6 +2,7 @@
 
 ### 機能
 - httpd_Jcbasimul_i2s / httpd_Radiko_i2s に加えて、マジョカアイリス を接続する前提で局名などが表示されます
+- Radiko では AAC-SBR を有効にし高音質で再生します(PSRAM を必要とします)
 
 ### ビルドに必要なライブラリ
 #### Jcbasimul / Radiko 共通
@@ -47,5 +48,6 @@
 |21|LED-||
 |22|GND|GND|
 - LED+／LED- はバックライト用で 5.5V～ が必要です。
+- ESP32-WROVER-B(PSRAMあり) でテストしています。
 
 ![image1](/docs/magimajyo.JPG)
