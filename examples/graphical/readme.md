@@ -4,7 +4,7 @@
 - [WebRadio_with_ESP8266Audio](https://github.com/m5stack/M5Unified/tree/master/examples/Advanced/WebRadio_with_ESP8266Audio) をベースにした、グラフィカルなインターフェースのコード例です。
 - 選局と音量は不揮発性メモリに保存され、次回の起動時に初期採用されます。
 
-![image1](docs/screenshot.png)
+![image1](/docs/screenshot.png)
 
 ### ビルドに必要なライブラリ
 #### Jcbasimul / Radiko 共通
