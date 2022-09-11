@@ -27,6 +27,6 @@
 |19|VDDIO|3V3|
 |20|LED+||
 |21|LED-||
-|22|GND|
+|22|GND|GND|
 
 ![image1](/docs/magimajyo.JPG)
