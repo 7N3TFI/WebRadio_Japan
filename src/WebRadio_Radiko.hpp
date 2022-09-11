@@ -184,9 +184,9 @@ class Radiko : public WebRadio {
               auto radiko = getRadiko();
               AudioGeneratorAAC * decoder;
               if(radiko->decode_buffer != nullptr)
-                decoder = new AudioGeneratorAAC(radiko->decode_buffer, radiko->decode_buffer_size);
+                decoder = new AudioGeneratorAAC(radiko->decode_buffer, radiko->decode_buffer_size, radiko->enableSBR);
               else
-                decoder = new AudioGeneratorAAC();
+                decoder = new AudioGeneratorAAC(radiko->enableSBR);
               
               decoder->RegisterMetadataCB(radiko->fnCbMetadata, radiko->fnCbMetadata_data);
               decoder->RegisterStatusCB  (radiko->fnCbStatus  , radiko->fnCbStatus_data  );
@@ -366,11 +366,17 @@ class Radiko : public WebRadio {
       this->lon = lon;
     }
     
+    void setEnableSBR(bool sbr = false) {
+      if(!decode_buffer)
+        enableSBR = sbr;
+    }
+    
     virtual bool begin() override {
       if(strlen(secret_key) != 40 && strlen(secret_key) != 32000)
         return false;     
       
-      if(!decode_buffer && decode_buffer_size) {
+      if(!decode_buffer) {
+        decode_buffer_size = enableSBR ? 89444: 26368;
         decode_buffer = heap_caps_malloc(decode_buffer_size, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
         if(!decode_buffer)
           return false;
@@ -515,6 +521,7 @@ class Radiko : public WebRadio {
       if(!stations.size())
         return false;
       
+      startTask();
       return true;
     }
     
@@ -576,11 +583,7 @@ class Radiko : public WebRadio {
     AudioFileSourceHLS * buffer = nullptr;
     uint16_t bufferSize;
     void * decode_buffer = nullptr;
-#ifdef AAC_ENABLE_SBR
-    size_t decode_buffer_size = 89428;
-#else
-    size_t decode_buffer_size = 26352;
-#endif
+    size_t decode_buffer_size;
     
     char * user = nullptr;;
     char * pass = nullptr;;
@@ -604,6 +607,7 @@ class Radiko : public WebRadio {
     void *fnCbMetadata_data = nullptr;
     AudioStatus::statusCBFn fnCbStatus = nullptr;
     void *fnCbStatus_data = nullptr;
+    bool enableSBR = false;
     
   private:
     void deInit() {
@@ -640,9 +644,6 @@ class Radiko : public WebRadio {
         select_playlist = nullptr;
       }
       
-      if(current_playlist && !decoder)
-        decoder = current_playlist->getDecoder();
-      
       if(current_playlist && !chunks) {
         chunks = current_playlist->getChunks();
         if(chunks == nullptr)
@@ -669,6 +670,14 @@ class Radiko : public WebRadio {
           stream = chunk->getStream();
           if(stream)
             buffer->setSource(stream);
+        }
+      }
+      
+      if(current_playlist && !decoder && buffer->isFilled()) {
+        decoder = current_playlist->getDecoder();
+        if(!decoder->begin(buffer, out)) {
+          delete decoder;
+          decoder = nullptr;
         }
       }
       
@@ -708,28 +717,23 @@ class Radiko : public WebRadio {
         stopDecode--;
         while(stopDecode) {delay(100);}
       }
-      else if(!decoder) {
-        ;
-      } else if (!decoder->isRunning()) {
-        if(buffer->isFilled() && !decoder->begin(buffer, out)) {
-          delay(1000);
-          last_loop = now_millis;
-        } else if (now_millis - last_loop > 10000) {
-          sendLog("Streaming can't begin", true);
-          last_loop = now_millis;
-          nextChunk = true;
-        }
-      } else if (decoder->isRunning()) {
+      
+      if(!decoder)
+        return;
+        
+      if (decoder->isRunning()) {
         if(buffer->getSize() >= 2*1024) {
           if(decoder->loop())
             last_loop = now_millis;
           else {
             decoder->stop();
+            decoder = nullptr;
             nextChunk = true;
           }
         } else if (now_millis - last_loop > 5000) {
           sendLog("Streaming reception time out", true);
           decoder->stop();
+          decoder = nullptr;
           nextChunk = true;
         }
       }

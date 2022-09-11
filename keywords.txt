@@ -18,6 +18,8 @@ onError	KEYWORD2
 onProgram	KEYWORD2
 onInfo	KEYWORD2
 setSyslog	KEYWORD2
+setAuthorization	KEYWORD2
+setEnableSBR	KEYWORD2
 begin		KEYWORD2
 play		KEYWORD2
 #######################################

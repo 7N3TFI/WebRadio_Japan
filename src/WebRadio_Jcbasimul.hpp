@@ -233,6 +233,7 @@ class Jcbasimul : public WebRadio {
       if(!bufferSize)
         bufferSize = std::max(5 * 1024, (int)std::min( (uint32_t)UINT16_MAX, heap_caps_get_free_size(MALLOC_CAP_SPIRAM)));
       
+      startTask();
       return true; 
     }
 
