@@ -2,8 +2,28 @@
 
 ### 機能
 - httpd_Jcbasimul_i2s / httpd_Radiko_i2s に加えて、マジョカアイリス を接続する前提で局名などが表示されます
+- Radiko では AAC-SBR を有効にし高音質で再生します
+- 液晶+SBR+Radikoプレミアム を全て有効にする場合には PSRAM を必要とします
+
+### ビルドに必要なライブラリ
+#### Jcbasimul / Radiko 共通
+- [espressif/arduino-esp32](https://github.com/espressif/arduino-esp32)
+- [Lovyan03/LovyanGFX](https://github.com/lovyan03/LovyanGFX)
+- [wakwak-koba/ESP8266Audio](https://github.com/wakwak-koba/ESP8266Audio) forked from [earlephilhower/ESP8266Audio](https://github.com/earlephilhower/ESP8266Audio)
+#### Jcbasimul のみ
+- [Links2004/arduinoWebSockets](https://github.com/Links2004/arduinoWebSockets)
+- [arduino-libraries/Arduino_JSON](https://github.com/arduino-libraries/Arduino_JSON)
 
 ### 配線
+|PCM5102Aモジュール|ESP32|
+|:----:|:----:|
+|SCK|GND|
+|BCK|G26|
+|DIN|G22|
+|LCK|G25|
+|GND|GND|
+|VIN|3V3|
+
 
 |マジョカアイリス|信号名|ESP32|
 |:----:|:--:|:----:|
@@ -27,4 +47,8 @@
 |19|VDDIO|3V3|
 |20|LED+||
 |21|LED-||
-|22|GND|
+|22|GND|GND|
+- LED+／LED- はバックライト用で 5.5V～ が必要です。
+- ESP32-WROVER-B(PSRAMあり) でテストしています。
+
+![image1](/docs/magimajyo.JPG)
