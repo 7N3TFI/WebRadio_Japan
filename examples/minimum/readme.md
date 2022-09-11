@@ -1,4 +1,4 @@
-# WebRadio_Japan
+# minimum_Jcbasimul / minimum_Radiko
 
 ### 機能
 - Jcbasimu / Radiko を M5Stack シリーズ（Gray/Fire/Core2等）の内蔵スピーカーで聴くための最小コード例です。
