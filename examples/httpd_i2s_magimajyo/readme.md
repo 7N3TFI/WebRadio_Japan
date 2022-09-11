@@ -28,3 +28,5 @@
 |20|LED+||
 |21|LED-||
 |22|GND|
+
+![image1](/docs/magimajyo.JPG)
