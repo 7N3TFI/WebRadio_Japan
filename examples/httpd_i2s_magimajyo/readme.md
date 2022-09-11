@@ -4,6 +4,15 @@
 - httpd_Jcbasimul_i2s / httpd_Radiko_i2s に加えて、マジョカアイリス を接続する前提で局名などが表示されます
 
 ### 配線
+|PCM5102Aモジュール|ESP32|
+|:----:|:----:|
+|SCK|GND|
+|BCK|G26|
+|DIN|G22|
+|LCK|G25|
+|GND|GND|
+|VIN|3V3|
+
 
 |マジョカアイリス|信号名|ESP32|
 |:----:|:--:|:----:|
@@ -28,5 +37,6 @@
 |20|LED+||
 |21|LED-||
 |22|GND|GND|
+- LED+／LED- はバックライト用で 5.5V～ が必要です。
 
 ![image1](/docs/magimajyo.JPG)
