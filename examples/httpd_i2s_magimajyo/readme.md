@@ -2,7 +2,7 @@
 
 ### 機能
 - httpd_Jcbasimul_i2s / httpd_Radiko_i2s に加えて、マジョカアイリス を接続する前提で局名などが表示されます
-- Radiko では AAC-SBR を有効にし高音質で再生します(PSRAM を必要とします)
+- Radiko では AAC-SBR を有効にし高音質で再生します(液晶+SBR+Radikoプレミアム を全て有効にする場合には PSRAM を必要とします)
 
 ### ビルドに必要なライブラリ
 #### Jcbasimul / Radiko 共通
